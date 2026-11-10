@@ -25,6 +25,11 @@ export default function Home() {
               Mon blog
             </a>
           </li>
+          <li>
+            <a href="/shop" className="hover:text-gray-400">
+              Shop (crud examples)
+            </a>
+          </li>
         </ul>
       </main>
     </div>
