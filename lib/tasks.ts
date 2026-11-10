@@ -1,34 +1,35 @@
-'use server';
+'use server'
 
-import { cacheTag, refresh, revalidateTag, updateTag } from "next/cache";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-
-const tasks: { title: string; done: boolean }[] = [
-  { title: "apprendre asynch/await", done: false },
-  { title: "ecouter mehdi", done: false },
-  { title: "reparer la tv", done: false },
-];
+import { db } from '@/db'
+import { tasksTable } from '@/db/schema'
+import { eq } from 'drizzle-orm'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 export async function getTasks() {
-  "use cache";
-  cacheTag("tasks");
-  return tasks;
+  return await db.select().from(tasksTable)
 }
 
-export async function createTask(form: FormData) {
-  const title = form.get("title");
-  if (title) {
-    tasks.push({
-      title: String(form.get("title")),
-      done: false,
-    });
-  }
-
-  updateTag("tasks");
+export async function addTask(form: FormData) {
+  await db.insert(tasksTable).values({
+    title: String(form.get('title')),
+    done: false,
+  })
+  redirect((await headers()).get('referer') ?? '/')
 }
 
-export async function deleteTask(id: number) {
-  tasks.splice(id, 1);
-  updateTag("tasks");
+export async function editTask(form: FormData) {
+  await db
+    .update(tasksTable)
+    .set({
+      title: String(form.get('title')),
+      done: form.get('done') === 'on',
+    })
+    .where(eq(tasksTable.id, String(form.get('id'))))
+  redirect((await headers()).get('referer') ?? '/')
+}
+
+export async function removeTask(id: string) {
+  await db.delete(tasksTable).where(eq(tasksTable.id, id))
+  redirect((await headers()).get('referer') ?? '/')
 }
