@@ -1,8 +1,7 @@
+import { Suspense } from "react";
 import { addItem, removeItem, getItem, editStock } from "@/lib/shop";
 
-export default async function ShopApp() {
-  const items = await getItem();
-
+export default function ShopApp() {
   return (
     <>
       <h1>Shop Inventory</h1>
@@ -34,59 +33,66 @@ export default async function ShopApp() {
 
       <h2>Inventory</h2>
 
-      {items.length === 0 ? (
-        <p>No items in your inventory yet.</p>
-      ) : (
-        <ul>
-          {items.map((item) => (
-            <li key={item.id}>
-              <h3>{item.item_name}</h3>
-
-              <p>Quantity: {item.quantity}</p>
-
-              <p>Price: €{item.price}</p>
-
-              {/* Edit item */}
-              <h4>Edit Item</h4>
-
-              <form action={editStock.bind(null, item.id)}>
-                <input
-                  name="item_name"
-                  type="text"
-                  defaultValue={item.item_name}
-                  placeholder="Item name"
-                  required
-                />
-
-                <input
-                  name="quantity"
-                  type="number"
-                  defaultValue={item.quantity}
-                  min="0"
-                  required
-                />
-
-                <input
-                  name="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  defaultValue={item.price}
-                  required
-                />
-
-                <button type="submit">Update Item</button>
-              </form>
-
-              <form action={removeItem.bind(null, item.id)}>
-                <button type="submit">Delete Item</button>
-              </form>
-
-              <hr />
-            </li>
-          ))}
-        </ul>
-      )}
+      <Suspense fallback={<p>Loading inventory...</p>}>
+        <Inventory />
+      </Suspense>
     </>
+  );
+}
+
+async function Inventory() {
+  const items = await getItem();
+
+  if (items.length === 0) {
+    return <p>No items in your inventory yet.</p>;
+  }
+
+  return (
+    <ul>
+      {items.map((item) => (
+        <li key={item.id}>
+          <h3>{item.item_name}</h3>
+
+          <p>Quantity: {item.quantity}</p>
+          <p>Price: €{item.price}</p>
+
+          <h4>Edit Item</h4>
+
+          <form action={editStock.bind(null, item.id)}>
+            <input
+              name="item_name"
+              type="text"
+              defaultValue={item.item_name}
+              required
+            />
+
+            <input
+              name="quantity"
+              type="number"
+              defaultValue={item.quantity}
+              min="0"
+              required
+            />
+
+            <input
+              name="price"
+              type="number"
+              step="0.01"
+              min="0"
+              defaultValue={item.price}
+              required
+            />
+
+            <button type="submit">Update Item</button>
+          </form>
+
+          <form action={removeItem.bind(null, item.id)}>
+            <button type="submit">Delete Item</button>
+          </form>
+
+          <hr />
+        </li>
+      ))}
+    </ul>
   );
 }
