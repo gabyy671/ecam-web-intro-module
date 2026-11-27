@@ -14,5 +14,12 @@ export const shopTable = pgTable('item', {
   price: float().notNull()
 })
 
+export const usersTable = pgTable('users', {
+  id: uuid().defaultRandom().primaryKey(),
+  login: text().notNull().unique(),
+  password: text().notNull(),
+})
+
+export type UserItem = typeof usersTable.$inferSelect
 export type ShopItem = typeof shopTable.$inferSelect
 export type NewShopItem = typeof shopTable.$inferInsert
